@@ -1,0 +1,149 @@
+{
+  "name": "05 - Cancelar cita",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "cita_id"
+            }
+          ]
+        }
+      },
+      "id": "cf32d60b-ac87-4f10-ba73-5929b1671fe8",
+      "name": "Entrada cancelar cita",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "aNaoABDO481RrY2G"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "cita_id",
+              "keyValue": "={{ $json.cita_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "cancelada"
+          },
+          "schema": [
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "display": true,
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dce96964-191c-4d3c-9ffd-e7715875f491",
+      "name": "Cancelar cita",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "aNaoABDO481RrY2G"
+        },
+        "returnAll": true
+      },
+      "id": "1486bfb8-968a-4624-979b-04488c3f2c8c",
+      "name": "Leer cita a cancelar",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const citaId=$items('Entrada cancelar cita')[0].json.cita_id; const cita=$input.all().map(i=>i.json).find(i=>i.cita_id===citaId); if(!cita)throw new Error('La cita no existe.'); if(cita.estado!=='confirmada')throw new Error('La cita ya no está confirmada y no se puede cancelar.'); const fecha=String(cita.fecha).slice(0,10); if(new Date(fecha+'T23:59:59')<new Date())throw new Error('Solo se pueden cancelar citas futuras.'); return {json:{cita_id:citaId,estado:'cancelada'}};"
+      },
+      "id": "42504f30-abad-482a-94ee-4255d52c3383",
+      "name": "Validar cancelación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada cancelar cita": {
+      "main": [
+        [
+          {
+            "node": "Leer cita a cancelar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer cita a cancelar": {
+      "main": [
+        [
+          {
+            "node": "Validar cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar cancelación": {
+      "main": [
+        [
+          {
+            "node": "Cancelar cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "1de8d18f-7c85-4eaf-b050-366468aaa1f6",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "499ae26dbae4453866556516f6a9a5ae62586a0ae0fea73ad69c2bbc996b6459"
+  },
+  "nodeGroups": [],
+  "id": "UIkfLYAyV8sSK8gt",
+  "tags": []
+}

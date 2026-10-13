@@ -1,0 +1,167 @@
+{
+  "name": "02 - Consultar disponibilidad",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "fecha"
+            },
+            {
+              "name": "hora"
+            },
+            {
+              "name": "servicio_id"
+            },
+            {
+              "name": "barbero_id"
+            }
+          ]
+        }
+      },
+      "id": "4e72df35-0701-4753-b7d4-89960fe4303e",
+      "name": "Entrada disponibilidad",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "LxOy5DkkOm1zEEFf"
+        },
+        "returnAll": true
+      },
+      "id": "def49a3d-af8f-40d3-bd77-04053557a323",
+      "name": "Leer barberos",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ZwOHBx8sWax3dHXS"
+        },
+        "returnAll": true
+      },
+      "id": "98593e3f-cf1b-4814-b17e-eca55d860a82",
+      "name": "Leer servicios",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        704,
+        304
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "aNaoABDO481RrY2G"
+        },
+        "returnAll": true
+      },
+      "id": "e29bb21e-234a-4eac-8e40-d862177c3860",
+      "name": "Leer citas",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        304
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const r=$items('Entrada disponibilidad')[0].json; const b=$items('Leer barberos').map(i=>i.json); const s=$items('Leer servicios').map(i=>i.json); const c=$items('Leer citas').map(i=>i.json); const fecha=String(r.fecha||'').slice(0,10), hora=String(r.hora||''), servicio=s.find(i=>i.servicio_id===r.servicio_id); const error=mensaje=>[{json:{ok:false,mensaje}}]; if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(fecha)||!/^([01]\\d|2[0-3]):(00|30)$/.test(hora)) return error('Indica fecha YYYY-MM-DD y hora en bloques de 30 minutos.'); if(!servicio)return error('El servicio solicitado no existe.'); const d=new Date(fecha+'T00:00:00'),hoy=new Date();hoy.setHours(0,0,0,0);const limite=new Date(hoy);limite.setDate(limite.getDate()+30);if(d<hoy||d>limite||d.getDay()===0)return error('Solo atendemos de lunes a sábado, desde hoy hasta 30 días adelante.');const toMin=x=>{const [a,z]=x.split(':').map(Number);return a*60+z};const inicio=toMin(hora),fin=inicio+Number(servicio.duracion_minutos);if(inicio<600||fin>1200)return error('El servicio no cabe en el horario de 10:00 a 20:00.');const candidatos=b.filter(x=>x.activo&&String(x.servicios).split('|').includes(r.servicio_id)&&(!r.barbero_id||x.barbero_id===r.barbero_id));const libre=p=>!c.some(x=>x.estado==='confirmada'&&String(x.fecha).slice(0,10)===fecha&&x.barbero_id===p.barbero_id&&inicio<toMin(x.hora_fin)&&fin>toMin(x.hora_inicio));const disponibles=candidatos.filter(libre).map(x=>({barbero_id:x.barbero_id,nombre:x.nombre,especialidad:x.especialidad}));return [{json:{ok:disponibles.length>0,fecha,hora_inicio:hora,hora_fin:String(Math.floor(fin/60)).padStart(2,'0')+':'+String(fin%60).padStart(2,'0'),servicio,barberos_disponibles:disponibles,mensaje:disponibles.length?'Hay disponibilidad para ese horario.':'No hay disponibilidad para ese horario.'}}];"
+      },
+      "id": "2f973a28-423f-472b-845f-b09f092f80f0",
+      "name": "Calcular disponibilidad",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada disponibilidad": {
+      "main": [
+        [
+          {
+            "node": "Leer barberos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer barberos": {
+      "main": [
+        [
+          {
+            "node": "Leer servicios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer servicios": {
+      "main": [
+        [
+          {
+            "node": "Leer citas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer citas": {
+      "main": [
+        [
+          {
+            "node": "Calcular disponibilidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "af97d64b-141a-4c9f-a96c-822744fb5747",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "499ae26dbae4453866556516f6a9a5ae62586a0ae0fea73ad69c2bbc996b6459"
+  },
+  "nodeGroups": [],
+  "id": "eSwNKbStbOsdc7Hu",
+  "tags": []
+}

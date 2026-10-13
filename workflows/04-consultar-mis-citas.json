@@ -1,0 +1,99 @@
+{
+  "name": "04 - Consultar mis citas",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "cliente_nombre"
+            },
+            {
+              "name": "cliente_telefono"
+            }
+          ]
+        }
+      },
+      "id": "9ac5766e-959d-44a1-a51a-1e930c3e7471",
+      "name": "Entrada consultar citas",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "aNaoABDO481RrY2G"
+        },
+        "returnAll": true
+      },
+      "id": "4093a0d1-ef88-465c-9708-4d7a7ef21645",
+      "name": "Leer citas del cliente",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const r=$items('Entrada consultar citas')[0].json; const now=new Date(); const citas=$input.all().map(i=>i.json).filter(x=>x.estado==='confirmada'&&x.cliente_nombre===r.cliente_nombre&&x.cliente_telefono===r.cliente_telefono&&new Date(x.fecha)>=new Date(now.toISOString().slice(0,10))); return [{json:{ok:true,citas}}];"
+      },
+      "id": "2cbfd75e-7574-4e14-a706-e507dd1c8265",
+      "name": "Filtrar citas futuras",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada consultar citas": {
+      "main": [
+        [
+          {
+            "node": "Leer citas del cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer citas del cliente": {
+      "main": [
+        [
+          {
+            "node": "Filtrar citas futuras",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "c50cbd50-75a8-46e9-8d70-3f72ed011b5b",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "499ae26dbae4453866556516f6a9a5ae62586a0ae0fea73ad69c2bbc996b6459"
+  },
+  "nodeGroups": [],
+  "id": "RuljdMSkmqh5LX2B",
+  "tags": []
+}

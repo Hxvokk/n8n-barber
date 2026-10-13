@@ -1,0 +1,272 @@
+{
+  "name": "03 - Agendar cita",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "cliente_nombre"
+            },
+            {
+              "name": "cliente_telefono"
+            },
+            {
+              "name": "servicio_id"
+            },
+            {
+              "name": "fecha"
+            },
+            {
+              "name": "hora_inicio"
+            },
+            {
+              "name": "barbero_id"
+            }
+          ]
+        }
+      },
+      "id": "2432e9ad-0aa0-4bfa-8f5e-02b0958ab8ad",
+      "name": "Entrada agendar cita",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const r=$items('Entrada agendar cita')[0].json; const barberos=$items('Leer barberos para validar').map(i=>i.json),servicios=$items('Leer servicios para validar').map(i=>i.json),citas=$items('Leer citas para validar').map(i=>i.json); const servicio=servicios.find(i=>i.servicio_id===r.servicio_id); if(!servicio)throw new Error('El servicio solicitado no existe.'); const barbero=barberos.find(i=>i.barbero_id===r.barbero_id&&i.activo===true&&String(i.servicios||'').split('|').includes(r.servicio_id)); if(!barbero)throw new Error('El barbero no está activo o no realiza ese servicio.'); const fecha=String(r.fecha||'').slice(0,10),hora=String(r.hora_inicio||''); if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(fecha)||!/^([01]\\d|2[0-3]):(00|30)$/.test(hora))throw new Error('Fecha u hora inválidas.'); const d=new Date(fecha+'T00:00:00'),hoy=new Date();hoy.setHours(0,0,0,0);const limite=new Date(hoy);limite.setDate(limite.getDate()+30);if(d<hoy||d>limite||d.getDay()===0)throw new Error('La fecha no está dentro del periodo permitido.'); const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m},inicio=toMin(hora),fin=inicio+Number(servicio.duracion_minutos);if(inicio<600||fin>1200)throw new Error('El servicio no cabe en el horario laboral.'); const ocupada=citas.some(i=>i.estado==='confirmada'&&String(i.fecha).slice(0,10)===fecha&&i.barbero_id===r.barbero_id&&inicio<toMin(i.hora_fin)&&fin>toMin(i.hora_inicio));if(ocupada)throw new Error('Ese horario ya no está disponible.'); return [{json:{...r,fecha,cita_id:'cita_'+Date.now(),hora_fin:String(Math.floor(fin/60)).padStart(2,'0')+':'+String(fin%60).padStart(2,'0'),estado:'confirmada'}}];"
+      },
+      "id": "c5767fe8-5515-49fb-9c1b-8369945b9bff",
+      "name": "Validar y preparar cita",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "aNaoABDO481RrY2G"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cita_id": "={{ $json.cita_id }}",
+            "fecha": "={{ $json.fecha }}",
+            "hora_inicio": "={{ $json.hora_inicio }}",
+            "hora_fin": "={{ $json.hora_fin }}",
+            "barbero_id": "={{ $json.barbero_id }}",
+            "servicio_id": "={{ $json.servicio_id }}",
+            "cliente_nombre": "={{ $json.cliente_nombre }}",
+            "cliente_telefono": "={{ $json.cliente_telefono }}",
+            "estado": "={{ $json.estado }}"
+          },
+          "schema": [
+            {
+              "id": "cita_id",
+              "displayName": "cita_id",
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "display": true,
+              "type": "date"
+            },
+            {
+              "id": "hora_inicio",
+              "displayName": "hora_inicio",
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "hora_fin",
+              "displayName": "hora_fin",
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "barbero_id",
+              "displayName": "barbero_id",
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "servicio_id",
+              "displayName": "servicio_id",
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "cliente_nombre",
+              "displayName": "cliente_nombre",
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "cliente_telefono",
+              "displayName": "cliente_telefono",
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "display": true,
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b0771282-24a3-489d-9307-6cdb2ac840ae",
+      "name": "Guardar cita",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1456,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "LxOy5DkkOm1zEEFf"
+        },
+        "returnAll": true
+      },
+      "id": "a3f56268-fed6-462b-aa8b-5c9a4cec1c84",
+      "name": "Leer barberos para validar",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ZwOHBx8sWax3dHXS"
+        },
+        "returnAll": true
+      },
+      "id": "02268628-6d02-4c8b-9799-6ef34bddb082",
+      "name": "Leer servicios para validar",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        704,
+        304
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "aNaoABDO481RrY2G"
+        },
+        "returnAll": true
+      },
+      "id": "82401d1d-dd59-4e35-9095-d4af40323df2",
+      "name": "Leer citas para validar",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        304
+      ],
+      "executeOnce": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Validar y preparar cita": {
+      "main": [
+        [
+          {
+            "node": "Guardar cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entrada agendar cita": {
+      "main": [
+        [
+          {
+            "node": "Leer barberos para validar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer barberos para validar": {
+      "main": [
+        [
+          {
+            "node": "Leer servicios para validar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer servicios para validar": {
+      "main": [
+        [
+          {
+            "node": "Leer citas para validar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer citas para validar": {
+      "main": [
+        [
+          {
+            "node": "Validar y preparar cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "2bb984f7-e540-4c10-8843-619e1031ce2c",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "499ae26dbae4453866556516f6a9a5ae62586a0ae0fea73ad69c2bbc996b6459"
+  },
+  "nodeGroups": [],
+  "id": "IWU0HIJonRovWZxt",
+  "tags": []
+}

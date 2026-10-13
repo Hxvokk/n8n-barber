@@ -1,0 +1,371 @@
+{
+  "name": "01 - Agente n8n Barber",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hola, soy el asistente de n8n Barber. ¿En qué puedo ayudarte?",
+        "options": {
+          "inputPlaceholder": "Escribe tu solicitud de cita...",
+          "loadPreviousSession": "memory",
+          "showWelcomeScreen": true,
+          "subtitle": "Agenda, consulta o cancela tus citas.",
+          "title": "n8n Barber",
+          "responseMode": "streaming"
+        }
+      },
+      "id": "0dc1c1b9-d001-43c0-8998-cc2b7154ce5f",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        240,
+        304
+      ],
+      "webhookId": "518beaf8-5c3b-4624-b3c5-1d58bd1c5a09"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "6c7a273c-88e4-4b98-b322-3a039528c008",
+      "name": "Memoria de sesión",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        768,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres el asistente de citas de n8n Barber. Responde en español neutral, profesional, amable y breve. Solo puedes consultar disponibilidad, agendar, cancelar y consultar citas futuras. Horario: lunes a sábado de 10:00 a 20:00; no domingos; reservas desde hoy hasta 30 días. Servicios: corte 30 minutos, barba 30 minutos, corte + barba 60 minutos. Barberos: Alex es barbero_01, Bruno es barbero_02 y Carlos es barbero_03. Cuando una tool pida barbero_id, usa esos IDs, nunca el nombre. Nunca inventes disponibilidad, reservas, barberos ni confirmaciones. Antes de ofrecer o confirmar un horario usa consultar_disponibilidad. Si no especifican barbero, muestra opciones; si siguen indecisos, recomienda uno disponible según el servicio. REGLA CRÍTICA DE AGENDAMIENTO: nunca uses agendar_cita en el mismo turno en que el usuario solicita una cita, aunque tenga todos los datos. Primero consulta disponibilidad, resume los datos y termina preguntando exactamente si desea confirmar. Solo usa agendar_cita después de que el usuario, en un mensaje posterior, responda una confirmación explícita como “sí, confirmo”. “Quiero”, “agenda”, proporcionar nombre o teléfono, o expresar intención no cuentan como confirmación. Para cancelar, primero usa consultar_mis_citas, muestra la cita y pide confirmación; solo entonces usa cancelar_cita con cita_id. Para consultas fuera de alcance responde: Puedo ayudarte a consultar, agendar, cancelar o revisar citas de n8n Barber. RESPUESTAS DE VALIDACIÓN:\nSi una fecha es pasada, domingo, está fuera de 30 días o un horario no es válido, responde con una sola oración completa y breve. No empieces una frase que no puedas terminar.\nEjemplo: “No puedo agendar esa fecha; n8n Barber atiende de lunes a sábado y acepta reservas desde hoy hasta 30 días adelante.” VALIDACIÓN OBLIGATORIA:\nPara cualquier solicitud de disponibilidad o cita, llama siempre a consultar_disponibilidad antes de responder. No supongas que una fecha es inválida.\nSi la fecha es válida pero el servicio termina después de las 20:00, responde exactamente: “No puedo agendar ese horario porque el servicio terminaría después de las 20:00, que es la hora de cierre de n8n Barber.” REGLA PRIORITARIA DE FUERA DE ALCANCE:\nEsta instrucción reemplaza cualquier respuesta anterior sobre solicitudes fuera de alcance. Responde siempre:\n“Lo siento, no puedo ayudarte con ese tema. Con gusto puedo ayudarte a consultar disponibilidad, agendar, cancelar o revisar una cita en n8n Barber.”\nNo respondas únicamente con una lista de capacidades.",
+          "maxIterations": 8
+        }
+      },
+      "id": "89fb18d4-8104-4894-88df-490fa61ef180",
+      "name": "AI Agent n8n Barber",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        608,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "maxOutputTokens": 1024,
+          "temperature": 0.2
+        }
+      },
+      "id": "9b89e2ac-7828-44a4-8d0d-61ea7c96613b",
+      "name": "Gemini n8n Barber",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        576
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "O5aj66uTG0kjry11",
+          "name": "Gemini n8n Barber"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Consulta disponibilidad antes de ofrecer o confirmar cualquier horario.",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "eSwNKbStbOsdc7Hu"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "fecha": "={{ $fromAI('fecha', 'Fecha YYYY-MM-DD', 'string') }}",
+            "hora": "={{ $fromAI('hora', 'Hora HH:mm', 'string') }}",
+            "servicio_id": "={{ $fromAI('servicio_id', 'corte, barba o corte_barba', 'string') }}",
+            "barbero_id": "={{ $fromAI('barbero_id', 'ID de barbero opcional', 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "servicio_id",
+              "displayName": "servicio_id",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "barbero_id",
+              "displayName": "barbero_id",
+              "required": false,
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "1a65bbf2-0a8b-4216-8a45-be2041494adc",
+      "name": "consultar_disponibilidad",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Crea una cita solo después de que el cliente confirme explícitamente.",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "IWU0HIJonRovWZxt"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cliente_nombre": "={{ $fromAI('cliente_nombre', 'Nombre ficticio', 'string') }}",
+            "cliente_telefono": "={{ $fromAI('cliente_telefono', 'Teléfono ficticio', 'string') }}",
+            "servicio_id": "={{ $fromAI('servicio_id', 'corte, barba o corte_barba', 'string') }}",
+            "fecha": "={{ $fromAI('fecha', 'Fecha YYYY-MM-DD', 'string') }}",
+            "hora_inicio": "={{ $fromAI('hora_inicio', 'Hora HH:mm', 'string') }}",
+            "barbero_id": "={{ $fromAI('barbero_id', 'ID del barbero', 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "cliente_nombre",
+              "displayName": "cliente_nombre",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "cliente_telefono",
+              "displayName": "cliente_telefono",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "servicio_id",
+              "displayName": "servicio_id",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "hora_inicio",
+              "displayName": "hora_inicio",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "barbero_id",
+              "displayName": "barbero_id",
+              "required": true,
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "df5b1114-f828-4e0a-b51c-a22f264cf1be",
+      "name": "agendar_cita",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Busca citas futuras confirmadas por nombre y teléfono ficticios.",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RuljdMSkmqh5LX2B"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cliente_nombre": "={{ $fromAI('cliente_nombre', 'Nombre ficticio', 'string') }}",
+            "cliente_telefono": "={{ $fromAI('cliente_telefono', 'Teléfono ficticio', 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "cliente_nombre",
+              "displayName": "cliente_nombre",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "cliente_telefono",
+              "displayName": "cliente_telefono",
+              "required": true,
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "0d46a03b-2bc9-4a82-bbe7-e3956287078b",
+      "name": "consultar_mis_citas",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Cambia una cita identificada a cancelada solo tras confirmación explícita.",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "UIkfLYAyV8sSK8gt"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cita_id": "={{ $fromAI('cita_id', 'ID de la cita a cancelar', 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "cita_id",
+              "displayName": "cita_id",
+              "required": true,
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "5c12104c-762f-47ab-b6c7-11666e2f8885",
+      "name": "cancelar_cita",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        608
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent n8n Barber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria de sesión": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat Trigger",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "AI Agent n8n Barber",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini n8n Barber": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent n8n Barber",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_disponibilidad": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent n8n Barber",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agendar_cita": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent n8n Barber",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_mis_citas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent n8n Barber",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelar_cita": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent n8n Barber",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "7e3068d4-bac4-48af-b963-aec21a992ab6",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "499ae26dbae4453866556516f6a9a5ae62586a0ae0fea73ad69c2bbc996b6459"
+  },
+  "nodeGroups": [],
+  "id": "SDpmDHyaTwCKv8yG",
+  "tags": []
+}
