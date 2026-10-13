@@ -56,18 +56,67 @@ Chat Trigger → AI Agent → respuesta de chat
 
 Las capturas corresponden a los casos definidos en [`casos.csv`](casos.csv). Cada ejecución se realizó con datos ficticios.
 
-| Caso | Prueba | Evidencia |
-|---|---|---|
-| 01 | Consulta de disponibilidad con Bruno | [Ver captura](evidencias/caso-01-disponibilidad-bruno.png) |
-| 02 | Agendamiento después de confirmación explícita | [Ver captura](evidencias/caso-02-agendamiento-confirmado.png) |
-| 03 | Consulta de una cita futura | [Ver captura](evidencias/caso-03-consulta-cita-futura.png) |
-| 04 | Cancelación confirmada de una cita | [Ver captura](evidencias/caso-04-cancelacion-confirmada.png) |
-| 05 | Rechazo de fecha pasada | [Ver captura](evidencias/caso-05-fecha-pasada.png) |
-| 06 | Rechazo de servicio que supera el horario de cierre | [Ver captura](evidencias/caso-06-horario-fuera-de-servicio.png) |
-| 07 | Memoria para identificar una cita contextual | [Ver captura](evidencias/caso-07-memoria-de-cancelacion-contextual.png) |
-| 08 | Escritura de cita y verificación en Data Table | [Chat](evidencias/caso-08-escritura-cita-confirmada.png) · [Data Table](evidencias/caso-08-verificacion-tabla-cita.png) |
-| 09 | Guardrail ante consulta deportiva | [Ver captura](evidencias/caso-09-guardrail-deportes.png) |
-| 10 | Guardrail ante solicitud de programación | [Ver captura](evidencias/caso-10-guardrail-programacion.png) |
+### Caso 01 — Consultar disponibilidad
+
+El agente consulta la disponibilidad de Bruno para un corte y responde usando los datos de agenda.
+
+![Caso 01: disponibilidad con Bruno](evidencias/caso-01-disponibilidad-bruno.png)
+
+### Caso 02 — Agendar con confirmación
+
+El agente muestra el resumen de la cita y solo la registra después de recibir una confirmación explícita.
+
+![Caso 02: agendamiento confirmado](evidencias/caso-02-agendamiento-confirmado.png)
+
+### Caso 03 — Consultar una cita futura
+
+El agente recupera una cita confirmada mediante el nombre y teléfono ficticios del cliente.
+
+![Caso 03: consulta de cita futura](evidencias/caso-03-consulta-cita-futura.png)
+
+### Caso 04 — Cancelar una cita
+
+El agente identifica la cita, pide confirmación y confirma que la cancelación fue realizada.
+
+![Caso 04: cancelación confirmada](evidencias/caso-04-cancelacion-confirmada.png)
+
+### Caso 05 — Fecha pasada
+
+El agente rechaza una solicitud para una fecha anterior y explica la regla de reservas.
+
+![Caso 05: fecha pasada](evidencias/caso-05-fecha-pasada.png)
+
+### Caso 06 — Horario fuera de servicio
+
+El agente detecta que un servicio de 60 minutos iniciado a las 19:30 terminaría después de las 20:00.
+
+![Caso 06: horario fuera de servicio](evidencias/caso-06-horario-fuera-de-servicio.png)
+
+### Caso 07 — Memoria conversacional
+
+Después de crear una cita, el agente interpreta “Mejor cancélala” como una referencia a la reserva recién conversada.
+
+![Caso 07: memoria de cancelación contextual](evidencias/caso-07-memoria-de-cancelacion-contextual.png)
+
+### Caso 08 — Escritura verificada
+
+La conversación confirma que se creó la cita y la segunda captura comprueba que el registro quedó guardado en la Data Table.
+
+![Caso 08: escritura de cita confirmada](evidencias/caso-08-escritura-cita-confirmada.png)
+
+![Caso 08: verificación en Data Table](evidencias/caso-08-verificacion-tabla-cita.png)
+
+### Caso 09 — Guardrail para consulta deportiva
+
+El agente rechaza amablemente una pregunta que no pertenece al alcance de la barbería.
+
+![Caso 09: guardrail para deportes](evidencias/caso-09-guardrail-deportes.png)
+
+### Caso 10 — Guardrail para programación
+
+El agente redirige una solicitud de programación hacia las funciones que sí ofrece n8n Barber.
+
+![Caso 10: guardrail para programación](evidencias/caso-10-guardrail-programacion.png)
 
 ## Estructura del repositorio
 
