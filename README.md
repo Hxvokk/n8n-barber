@@ -44,13 +44,11 @@ Chat Trigger → AI Agent → respuesta de chat
 | Datos | Data Tables de n8n | No requiere una base de datos o cuenta externa. |
 | Tools | Call n8n Workflow Tool | Separa conversación, validaciones y operaciones de escritura. |
 
-## Ejecución
+## Configuración requerida
 
-1. Crear una credencial **Google Gemini (PaLM) API** en n8n; la API key se guarda exclusivamente en Credentials.
-2. Importar los workflows de `workflows/`.
-3. Crear las Data Tables `barberos`, `servicios` y `citas` con datos ficticios.
-4. Publicar los workflows auxiliares y después el workflow principal.
-5. Abrir el Chat Trigger hospedado y ejecutar los casos de `casos.csv`.
+La reproducción del proyecto requiere una credencial **Google Gemini (PaLM) API** creada en n8n. La API key se almacena exclusivamente en Credentials.
+
+Los JSON de `workflows/` se importan junto con las Data Tables `barberos`, `servicios` y `citas`, cargadas con datos ficticios. Los workflows auxiliares se publican antes que el workflow principal. Finalmente, el Chat Trigger hospedado permite ejecutar los casos documentados en [`casos.csv`](casos.csv).
 
 ## Evidencias de pruebas
 
@@ -134,4 +132,4 @@ El agente redirige una solicitud de programación hacia las funciones que sí of
 
 - Todos los clientes, teléfonos y citas son ficticios.
 - Las API keys no se incluyen en workflows, prompts, README ni evidencias.
-- Antes de entregar, se deben revisar los JSON exportados buscando `key`, `token`, `sk-` y `AIza`.
+- Los JSON exportados fueron revisados buscando `key`, `token`, `sk-` y `AIza`; no contienen secretos expuestos.
