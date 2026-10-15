@@ -50,6 +50,63 @@ La reproducción del proyecto requiere una credencial **Google Gemini (PaLM) API
 
 Los JSON de `workflows/` se importan junto con las Data Tables `barberos`, `servicios` y `citas`, cargadas con datos ficticios. Los workflows auxiliares se publican antes que el workflow principal. Finalmente, el Chat Trigger hospedado permite ejecutar los casos documentados en [`casos.csv`](casos.csv).
 
+> Los exports de n8n conservan IDs internos de las Data Tables. Después de importar los workflows en otra instancia, los nodos **Data Table** deben seleccionar las tablas equivalentes de esa instancia.
+
+## Datos iniciales
+
+Todas las tablas usan información ficticia. Para reproducir las pruebas, las citas semilla deben utilizar fechas futuras respecto al día de la ejecución.
+
+### Data Table `barberos`
+
+| Columna | Tipo |
+|---|---|
+| `barbero_id` | String |
+| `nombre` | String |
+| `especialidad` | String |
+| `servicios` | String |
+| `activo` | Boolean |
+
+| barbero_id | nombre | especialidad | servicios | activo |
+|---|---|---|---|---|
+| `barbero_01` | Alex | Cortes clásicos | `corte\|barba` | `true` |
+| `barbero_02` | Bruno | Fade y diseño | `corte\|corte_barba` | `true` |
+| `barbero_03` | Carlos | Barba y afeitado | `barba\|corte_barba` | `true` |
+
+### Data Table `servicios`
+
+| Columna | Tipo |
+|---|---|
+| `servicio_id` | String |
+| `nombre` | String |
+| `duracion_minutos` | Number |
+
+| servicio_id | nombre | duracion_minutos |
+|---|---|---:|
+| `corte` | Corte | 30 |
+| `barba` | Barba | 30 |
+| `corte_barba` | Corte + barba | 60 |
+
+### Data Table `citas`
+
+| Columna | Tipo |
+|---|---|
+| `cita_id` | String |
+| `fecha` | Date |
+| `hora_inicio` | String |
+| `hora_fin` | String |
+| `barbero_id` | String |
+| `servicio_id` | String |
+| `cliente_nombre` | String |
+| `cliente_telefono` | String |
+| `estado` | String |
+
+| cita_id | fecha | inicio | fin | barbero | servicio | cliente | teléfono | estado |
+|---|---|---|---|---|---|---|---|---|
+| `cita_semilla_01` | 2026-10-19 | 16:00 | 16:30 | `barbero_01` | `corte` | Ana | 5551234567 | `confirmada` |
+| `cita_semilla_02` | 2026-10-19 | 17:00 | 18:00 | `barbero_02` | `corte_barba` | Diego | 5552223344 | `confirmada` |
+| `cita_semilla_03` | 2026-10-19 | 18:00 | 18:30 | `barbero_03` | `barba` | Martina | 5553334455 | `confirmada` |
+| `cita_semilla_04` | 2026-10-19 | 13:00 | 13:30 | `barbero_01` | `corte` | Carlos | 5559990000 | `cancelada` |
+
 ## Evidencias de pruebas
 
 Las capturas corresponden a los casos definidos en [`casos.csv`](casos.csv). Cada ejecución se realizó con datos ficticios.
